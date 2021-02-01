@@ -1,0 +1,24 @@
+# ========================
+# ===== Build binary =====
+# ========================
+FROM golang:alpine AS builder
+
+WORKDIR /go/src/app
+
+COPY . .
+
+RUN go mod download && CGO_ENABLED=1 go build -o openvpn_exporter main.go
+
+
+# ===========================
+# ===== Build Container =====
+# ===========================
+FROM alpine
+
+COPY --from=builder /go/src/app/openvpn_exporter /bin/openvpn_exporter
+
+ENTRYPOINT ["/bin/openvpn_exporter"]
+
+EXPOSE 9176
+
+CMD [ "-h" ]
